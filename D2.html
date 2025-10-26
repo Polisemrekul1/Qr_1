@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>QR_yemekhane</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width:640px; margin:40px auto; padding:20px; }
+    .card { border:1px solid #ddd; padding:18px; border-radius:8px; }
+    input[type="text"]{ width:100%; padding:8px; margin-top:8px; box-sizing:border-box;}
+    button{ margin-top:10px; padding:10px 14px; cursor:pointer; }
+    .hidden { display:none; }
+    .small { color:#666; font-size:0.9rem; margin-top:8px; }
+    .options { margin-top:12px; }
+    .option { display:block; margin-bottom:6px; }
+    img.question-img { max-width:100%; border-radius:6px; margin-top:10px; }
+  </style>
+</head>
+<body>
+  <!-- 1️⃣ İsim Soyisim Girişi -->
+  <div class="card" id="nameForm">
+    <h2>Katılımcı Bilgileri</h2>
+    <label>Ad Soyad:</label>
+    <input id="fullname" type="text" placeholder="Ad Soyadınızı yazın" />
+    <button id="startBtn">Teste Başla</button>
+  </div>
+
+  <!-- 2️⃣ Quiz Alanı -->
+  <div class="card hidden" id="quiz">
+    <h2 id="q-title"></h2>
+    <div id="q-text"></div>
+    <img id="q-img" class="question-img hidden" alt="Soru görseli">
+    <div id="options" class="options"></div>
+    <input id="answer" type="text" placeholder="Cevabınızı yazın" autocomplete="off" />
+    <div>
+      <button id="checkBtn">Cevabı Kontrol Et</button>
+    </div>
+    <div class="small" id="feedback"></div>
+  </div>
+
+  <!-- 3️⃣ Sonuç ekranı -->
+  <div class="card hidden" id="resultCard">
+    <h2>Test Tamamlandı</h2>
+    <p>Teşekkürler <span id="userName"></span>!</p>
+    <p>İpucu: Fransızların mekanı neredir?</p>
+  </div>
+
+  <script>
+    // 🔹 1. Sorular
+    const questions = [
+      {
+        q: "Fotoğraftaki kişi hangisini yapmalıdır?",
+        a: "Tüpü yangının merkezine doğrultup kullanma",
+        img: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Ankara_Kalesi%2C_Ankara_2018.jpg",
+        options: ["Tüpü yangına fırlatma", "Yangının üstüne atlayıp tüpü geride bırakma", "Tüpü yangının merkezine doğrultup kullanma", "Tüpün piniyle oynama"]
+      },
+      {
+        q: "Bu hayvan hangisidir?",
+        a: "kedi",
+        img: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
+        options: ["Köpek", "Tavşan", "Kedi", "Kuş"]
+      },
+      {
+        q: "2 + 2 kaçtır?",
+        a: "4",
+        options: ["3", "4", "5", "6"]
+      }
+    ];
+
+    // 🔹 2. HTML elemanlarını yakala
+    const nameForm = document.getElementById('nameForm');
+    const quiz = document.getElementById('quiz');
+    const resultCard = document.getElementById('resultCard');
+    const userNameSpan = document.getElementById('userName');
+    const fullnameInput = document.getElementById('fullname');
+    const startBtn = document.getElementById('startBtn');
+    const qTitle = document.getElementById('q-title');
+    const qText = document.getElementById('q-text');
+    const qImg = document.getElementById('q-img');
+    const optionsDiv = document.getElementById('options');
+    const answerInput = document.getElementById('answer');
+    const checkBtn = document.getElementById('checkBtn');
+    const feedback = document.getElementById('feedback');
+
+    // 🔹 3. Değişkenler
+    let idx = 0;
+    let fullname = "";
+
+    // 🔹 4. Google Script (istersen aktif et)
+    const scriptURL = "https://script.google.com/macros/s/AKfycbx0PmtZag9H7qK-825dceXNEfRr85XaZVmJdkxBtIPdo_uG7-RqZnw17fWg9NPe7ie1/exec";
+
+    // 🔹 5. Testi başlat
+    startBtn.onclick = () => {
+      fullname = fullnameInput.value.trim();
+      if (!fullname) {
+        alert("Lütfen ad soyad girin.");
+        return;
+      }
+      nameForm.classList.add('hidden');
+      quiz.classList.remove('hidden');
+      showQuestion(idx);
+    };
+
+    // 🔹 6. Soru göster
+    function showQuestion(i){
+      if(i >= questions.length){
+        finishTest();
+        return;
+      }
+
+      const q = questions[i];
+      qTitle.textContent = `Soru ${i+1}`;
+      qText.textContent = q.q;
+
+      // Görsel varsa göster
+      if(q.img){
+        qImg.src = q.img;
+        qImg.classList.remove('hidden');
+      } else {
+        qImg.classList.add('hidden');
+      }
+
+      // Şıkları göster
+      optionsDiv.innerHTML = "";
+      if(q.options && q.options.length){
+        q.options.forEach(opt => {
+          const btn = document.createElement("button");
+          btn.textContent = opt;
+          btn.className = "option";
+          btn.onclick = () => {
+            answerInput.value = opt;
+          };
+          optionsDiv.appendChild(btn);
+        });
+      }
+
+      answerInput.value = "";
+      answerInput.focus();
+      feedback.textContent = "";
+    }
+
+    // 🔹 7. Cevabı kontrol et
+    function normalize(s){ return String(s || "").trim().toLowerCase(); }
+
+    function checkAnswer(){
+      const given = normalize(answerInput.value);
+      const correct = normalize(questions[idx].a);
+
+      if(given === ""){
+        feedback.textContent = "Lütfen bir cevap yazın.";
+        return;
+      }
+
+      const isCorrect = (given === correct);
+
+      // Google Sheet'e gönder
+      sendToGoogleSheet({
+        adsoyad: fullname,
+        soru: questions[idx].q,
+        cevap: given,
+        dogru: isCorrect ? "Evet" : "Hayır"
+      });
+
+      if(isCorrect){
+        finishTest();
+      } else {
+        idx++;
+        showQuestion(idx);
+      }
+    }
+
+    checkBtn.addEventListener('click', checkAnswer);
+    answerInput.addEventListener('keydown', e => { if(e.key === 'Enter') checkAnswer(); });
+
+    // 🔹 8. Test bitince
+    function finishTest(){
+      quiz.classList.add('hidden');
+      resultCard.classList.remove('hidden');
+      userNameSpan.textContent = fullname;
+    }
+
+    // 🔹 9. Veriyi Google Sheet'e gönder
+    function sendToGoogleSheet(record) {
+      fetch(scriptURL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(record)
+      }).catch(err => console.log("Veri gönderilemedi:", err));
+    }
+  </script>
+</body>
+</html>
