@@ -14,6 +14,7 @@
     .options { margin-top:12px; }
     .option { display:block; margin-bottom:6px; }
     img.question-img { max-width:100%; border-radius:6px; margin-top:10px; }
+    iframe.video { width:100%; height:315px; border-radius:8px; margin-top:10px; }
   </style>
 </head>
 <body>
@@ -25,7 +26,18 @@
     <button id="startBtn">Teste Başla</button>
   </div>
 
-  <!-- 2️⃣ Quiz Alanı -->
+  <!-- 2️⃣ Video Alanı -->
+  <div class="card hidden" id="videoCard">
+    <h2>İzlemeden Geçmeyin 🎥</h2>
+    <iframe class="video"
+      src="https://www.youtube.com/embed/BLEPakj1YTY?start=14"
+      title="Video"
+      allowfullscreen>
+    </iframe>
+    <button id="continueBtn">Devam Et →</button>
+  </div>
+
+  <!-- 3️⃣ Quiz Alanı -->
   <div class="card hidden" id="quiz">
     <h2 id="q-title"></h2>
     <div id="q-text"></div>
@@ -38,7 +50,7 @@
     <div class="small" id="feedback"></div>
   </div>
 
-  <!-- 3️⃣ Sonuç ekranı -->
+  <!-- 4️⃣ Sonuç ekranı -->
   <div class="card hidden" id="resultCard">
     <h2>Test Tamamlandı</h2>
     <p>Teşekkürler <span id="userName"></span>!</p>
@@ -51,7 +63,7 @@
       {
         q: "Fotoğraftaki kişi hangisini yapmalıdır?",
         a: "Tüpü yangının merkezine doğrultup kullanma",
-        img: "https://upload.wikimedia.org/wikipedia/commons/6/6b/Ankara_Kalesi%2C_Ankara_2018.jpg",
+        img: "./Emre Ynagın.jpg", // 📸 senin yerel fotoğrafın
         options: ["Tüpü yangına fırlatma", "Yangının üstüne atlayıp tüpü geride bırakma", "Tüpü yangının merkezine doğrultup kullanma", "Tüpün piniyle oynama"]
       },
       {
@@ -69,11 +81,13 @@
 
     // 🔹 2. HTML elemanlarını yakala
     const nameForm = document.getElementById('nameForm');
+    const videoCard = document.getElementById('videoCard');
     const quiz = document.getElementById('quiz');
     const resultCard = document.getElementById('resultCard');
     const userNameSpan = document.getElementById('userName');
     const fullnameInput = document.getElementById('fullname');
     const startBtn = document.getElementById('startBtn');
+    const continueBtn = document.getElementById('continueBtn');
     const qTitle = document.getElementById('q-title');
     const qText = document.getElementById('q-text');
     const qImg = document.getElementById('q-img');
@@ -89,7 +103,7 @@
     // 🔹 4. Google Script (istersen aktif et)
     const scriptURL = "https://script.google.com/macros/s/AKfycbx0PmtZag9H7qK-825dceXNEfRr85XaZVmJdkxBtIPdo_uG7-RqZnw17fWg9NPe7ie1/exec";
 
-    // 🔹 5. Testi başlat
+    // 🔹 5. Testi başlat → video göster
     startBtn.onclick = () => {
       fullname = fullnameInput.value.trim();
       if (!fullname) {
@@ -97,11 +111,17 @@
         return;
       }
       nameForm.classList.add('hidden');
+      videoCard.classList.remove('hidden');
+    };
+
+    // 🔹 6. Videodan sonra → sorulara geç
+    continueBtn.onclick = () => {
+      videoCard.classList.add('hidden');
       quiz.classList.remove('hidden');
       showQuestion(idx);
     };
 
-    // 🔹 6. Soru göster
+    // 🔹 7. Soru göster
     function showQuestion(i){
       if(i >= questions.length){
         finishTest();
@@ -112,7 +132,6 @@
       qTitle.textContent = `Soru ${i+1}`;
       qText.textContent = q.q;
 
-      // Görsel varsa göster
       if(q.img){
         qImg.src = q.img;
         qImg.classList.remove('hidden');
@@ -120,7 +139,6 @@
         qImg.classList.add('hidden');
       }
 
-      // Şıkları göster
       optionsDiv.innerHTML = "";
       if(q.options && q.options.length){
         q.options.forEach(opt => {
@@ -139,7 +157,7 @@
       feedback.textContent = "";
     }
 
-    // 🔹 7. Cevabı kontrol et
+    // 🔹 8. Cevabı kontrol et
     function normalize(s){ return String(s || "").trim().toLowerCase(); }
 
     function checkAnswer(){
@@ -153,7 +171,6 @@
 
       const isCorrect = (given === correct);
 
-      // Google Sheet'e gönder
       sendToGoogleSheet({
         adsoyad: fullname,
         soru: questions[idx].q,
@@ -172,14 +189,14 @@
     checkBtn.addEventListener('click', checkAnswer);
     answerInput.addEventListener('keydown', e => { if(e.key === 'Enter') checkAnswer(); });
 
-    // 🔹 8. Test bitince
+    // 🔹 9. Test bitince
     function finishTest(){
       quiz.classList.add('hidden');
       resultCard.classList.remove('hidden');
       userNameSpan.textContent = fullname;
     }
 
-    // 🔹 9. Veriyi Google Sheet'e gönder
+    // 🔹 10. Google Sheet'e gönder
     function sendToGoogleSheet(record) {
       fetch(scriptURL, {
         method: "POST",
@@ -191,4 +208,3 @@
   </script>
 </body>
 </html>
-
