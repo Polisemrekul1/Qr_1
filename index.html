@@ -50,32 +50,37 @@
     <div class="small" id="feedback"></div>
   </div>
 
-  <!-- 4️⃣ Sonuç ekranı -->
-  <div class="card hidden" id="resultCard">
-    <h2>Test Tamamlandı</h2>
-    <p>Teşekkürler <span id="userName"></span>!</p>
-    <p>İpucu: Fransızların mekanı neredir?</p>
-  </div>
+ <!-- 4️⃣ Sonuç ekranı -->
+<div class="card hidden" id="resultCard">
+  <h2>Test Tamamlandı</h2>
+  <p>Teşekkürler <span id="userName"></span>!</p>
+  <p>İpucu: Okulumuzun kuruluş sebebi olan kişi nerededir?</p>
+  <img
+    src="https://burakbora.meb.k12.tr/meb_iys_dosyalar/34/14/218336/resimler/2020_04/k_10211911_25.jpg"
+    alt="İpucu görseli"
+    style="max-width:100%; border-radius:8px; margin-top:10px;"
+  />
+</div>
 
   <script>
     // 🔹 1. Sorular
     const questions = [
       {
+       q: "Aşağıdakilerden hangisi deprem anında yapılmalıdır?",
+        a: "Çök Kapan Tutun",
+        img: "https://media.istockphoto.com/id/471332612/tr/foto%C4%9Fraf/cracked-road-concrete-close-up.jpg?s=612x612&w=0&k=20&c=0eG3dz6k1yWKkIR9pphTTXPEqpqkO2btuD95d4usqMY=",
+        options: ["Camdan atlamak", "Yola çıkıp yere yatmak", "Çök Kapan Tutun", "Ocakları açmak>"]
+      },
+      {
         q: "Fotoğraftaki kişi hangisini yapmalıdır?",
         a: "Tüpü yangının merkezine doğrultup kullanma",
-        img: "./Emre Ynagın.jpg", // 📸 senin yerel fotoğrafın
-        options: ["Tüpü yangına fırlatma", "Yangının üstüne atlayıp tüpü geride bırakma", "Tüpü yangının merkezine doğrultup kullanma", "Tüpün piniyle oynama"]
+        img: "./Emre Ynagın.jpg",
+        options: ["Tüpü yangının merkezine doğrultup kullanma", "Yangının üstüne atlayıp tüpü geride bırakma", "Tüpü yangına fırlatma", "Tüpün piniyle oynama"]
       },
       {
-        q: "Bu hayvan hangisidir?",
-        a: "kedi",
-        img: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
-        options: ["Köpek", "Tavşan", "Kedi", "Kuş"]
-      },
-      {
-        q: "2 + 2 kaçtır?",
-        a: "4",
-        options: ["3", "4", "5", "6"]
+        q: "Deprem çantaında hangisi olmamalıdır?",
+        a: "Ps5 Pro",
+        options: ["Sürekli kullandığımız ilaçlar", "Mevsimlik kıyafetler", "Konserve yiyecekler", "Ps5 Pro"]
       }
     ];
 
